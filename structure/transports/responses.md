@@ -338,7 +338,7 @@ operator-supplied header wins case-insensitively. Renamed providers are covered 
 fixed key-auth destination still matches the registry; custom and lookalike URLs receive nothing.
 Muse Spark's Responses sanitizer also drops the provider-rejected `search_content_types` and
 `indexed_web_access` fields from plain `web_search` tools while preserving preview tools and
-unrelated models.
+unrelated models; it keys on those exact model ids, so a relay of the same gateway is covered too.
 
 Direct Meta Muse / Meta Model Responses (`https://api.meta.ai/v1`) also rejects function tool
 names longer than 64 characters or containing characters outside `[a-zA-Z0-9_-]`. After namespace

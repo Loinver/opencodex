@@ -1968,18 +1968,19 @@ export function stripOpenAiOnlyWebSearchFields(body: unknown): unknown {
  * same-shaped successor to 1.2 on the same Zen wire, and an equality check would
  * have let a Codex-emitted `web_search` body reach the
  * gateway and come back 400 for every request the moment 1.3 was selected.
+ *
+ * Keyed on the id alone, never on the send URL: the rejection travels with the model.
+ * These ids exist only on the Zen/Go and direct-Meta gateways, every one of which refuses
+ * the fields, so a relay of the same gateway needs the same sanitized body. The exact-URL
+ * allowlist that used to sit beside this set did the opposite — a Console Go reseller host
+ * (2026-09-14) served this model, kept `search_content_types`, and 400ed every turn that
+ * attached Codex's default `web_search` declaration.
  */
 const MUSE_SPARK_WEB_SEARCH_STRICT_MODELS = new Set([
   "muse-spark-1.3-contributor",
   "muse-spark-1.3-contributor-free",
   "muse-spark-1.2-contributor",
   "muse-spark-1.2-contributor-free",
-]);
-
-const MUSE_SPARK_WEB_SEARCH_STRICT_RESPONSE_URLS = new Set([
-  "https://opencode.ai/zen/v1/responses",
-  "https://opencode.ai/zen/go/v1/responses",
-  "https://api.meta.ai/v1/responses",
 ]);
 
 const MUSE_SPARK_UNSUPPORTED_WEB_SEARCH_FIELDS = [
@@ -1990,29 +1991,19 @@ const MUSE_SPARK_UNSUPPORTED_WEB_SEARCH_FIELDS = [
 /**
  * OpenCode Zen / Go and the direct Meta Muse Spark Responses gateways refuse a
  * short list of Codex `web_search` fields. `web_search_preview` keeps its accepted
- * shape, and Luna remains untouched. Match the exact effective request URL;
- * malformed, credentialed, or parameterized destinations keep their original body
- * instead of assuming this gateway contract. Keep the rejected names together so a
- * newly identified field is a one-line compatibility update rather than another
- * bespoke rewrite.
+ * shape, and Luna remains untouched. Only the model id decides: the ids above name one
+ * gateway family wherever it is reached from, and the canonical OpenAI forward path — the
+ * one destination that documents the field — never calls this transform. Keep the rejected
+ * names together so a newly identified field is a one-line compatibility update rather than
+ * another bespoke rewrite.
  */
 function stripMuseSparkUnsupportedWebSearchFields(
   body: unknown,
   modelId: unknown,
-  responseUrl: string,
 ): unknown {
   if (!isPlainObject(body)) return body;
   if (typeof modelId !== "string") return body;
   if (!MUSE_SPARK_WEB_SEARCH_STRICT_MODELS.has(modelId.trim().toLowerCase())) return body;
-  let destination: string;
-  try {
-    const url = new URL(responseUrl);
-    if (url.username || url.password || url.search || url.hash) return body;
-    destination = `${url.origin.toLowerCase()}${url.pathname.replace(/\/+$/, "")}`;
-  } catch {
-    return body;
-  }
-  if (!MUSE_SPARK_WEB_SEARCH_STRICT_RESPONSE_URLS.has(destination)) return body;
 
   const rewriteTools = (tools: unknown[]): { tools: unknown[]; changed: boolean } => {
     let changed = false;
@@ -2313,7 +2304,7 @@ export function createResponsesPassthroughAdapter(provider: OcxProviderConfig): 
         if (provider.supportsOpenAiWebSearchToolFields === false) {
           outBody = stripOpenAiOnlyWebSearchFields(outBody);
         }
-        outBody = stripMuseSparkUnsupportedWebSearchFields(outBody, parsed.modelId, url);
+        outBody = stripMuseSparkUnsupportedWebSearchFields(outBody, parsed.modelId);
         // Host-only: api.meta.ai rejects function names over 64 chars on every Muse model,
         // including default muse-spark-1.3. Do not reuse the contributor/Zen web_search
         // predicates. Namespace flattening has already produced the public wire names.

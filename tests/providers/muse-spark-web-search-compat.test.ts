@@ -41,6 +41,12 @@ const META_PATH_PROVIDER = {
   responsesPath: "/v1/responses",
 };
 
+/** A third-party relay of the same Console Go gateway: its own origin, the same validator. */
+const RELAY_PROVIDER = {
+  ...ZEN_PROVIDER,
+  baseUrl: "https://relay.example/v1",
+};
+
 /** A Codex web_search declaration exactly as `hosted_spec.rs` emits it for TextAndImage. */
 function webSearchTool(): Record<string, unknown> {
   return {
@@ -214,7 +220,7 @@ describe("#2617/#3378 Muse Spark web_search compatibility", () => {
     expect(Object.hasOwn(tool, "indexed_web_access")).toBe(false);
   });
 
-  test("split baseUrl and responsesPath configurations derive both strict destinations", () => {
+  test("split baseUrl and responsesPath configurations reach the guard too", () => {
     for (const provider of [ZEN_PATH_PROVIDER, ZEN_GO_PATH_PROVIDER]) {
       const body = buildForProvider(provider, "muse-spark-1.3-contributor", {
         tools: [webSearchTool()],
@@ -258,12 +264,46 @@ describe("#2617/#3378 Muse Spark web_search compatibility", () => {
     expect(tool.indexed_web_access).toBe(true);
   });
 
-  test("split Meta baseUrl and responsesPath derives the same strict destination", () => {
+  test("split Meta baseUrl and responsesPath reaches the guard too", () => {
     const body = buildForProvider(META_PATH_PROVIDER, "muse-spark-1.3-contributor", {
       tools: [webSearchTool()],
     });
     const tool = toolsOf(body)[0]!;
     expect(Object.hasOwn(tool, "search_content_types")).toBe(false);
     expect(Object.hasOwn(tool, "indexed_web_access")).toBe(false);
+  });
+
+  /**
+   * The rejection belongs to the model, not to the host. An exact-URL allowlist made the
+   * guard blind to a relay that fronted the same gateway from its own origin: on 2026-09-14
+   * every Console Go reseller turn 400ed with "`tools[].search_content_types` is only
+   * supported for web_search_preview tools" while the same model and body worked on
+   * opencode.ai. Keying on the model id covers the relay without touching preview tools or
+   * unrelated models.
+   */
+  test("a relay host of the same gateway gets the same sanitization", () => {
+    const body = buildForProvider(RELAY_PROVIDER, "muse-spark-1.3-contributor", {
+      tools: [webSearchTool()],
+      input: [{ type: "additional_tools", tools: [webSearchTool()] }],
+    });
+    const tool = toolsOf(body)[0]!;
+    const item = (body.input as Array<Record<string, unknown>>)[0]!;
+    const nested = (item.tools as Array<Record<string, unknown>>)[0]!;
+    for (const declaration of [tool, nested]) {
+      expect(declaration.type).toBe("web_search");
+      expect(declaration.search_context_size).toBe("medium");
+      expect(Object.hasOwn(declaration, "search_content_types")).toBe(false);
+      expect(Object.hasOwn(declaration, "indexed_web_access")).toBe(false);
+    }
+  });
+
+  test("a relay host keeps the field on web_search_preview and for unrelated models", () => {
+    const preview = buildForProvider(RELAY_PROVIDER, "muse-spark-1.3-contributor", {
+      tools: [{ ...webSearchTool(), type: "web_search_preview" }],
+    });
+    expect(toolsOf(preview)[0]!.search_content_types).toEqual(["text", "image"]);
+    const unrelated = buildForProvider(RELAY_PROVIDER, "gpt-5.6-luna", { tools: [webSearchTool()] });
+    expect(toolsOf(unrelated)[0]!.search_content_types).toEqual(["text", "image"]);
+    expect(toolsOf(unrelated)[0]!.indexed_web_access).toBe(true);
   });
 });
