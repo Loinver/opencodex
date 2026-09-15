@@ -65,6 +65,16 @@ bun run dev:proxy   # 以开发模式启动代理 API (src/cli/index.ts start)
 bun run dev:gui     # 启动仪表盘 dev 服务器 (另一个终端)
 ```
 
+如需一步完成源码更新并重新启动本地构建的代理：
+
+```bash
+bun run update:source [--proxy http://127.0.0.1:7897]
+```
+
+该命令要求工作区干净，先停止代理（绝不在运行中的代理下方替换文件），再执行 fast-forward
+拉取、重新安装锁定依赖、重新构建打包仪表盘，最后重新启动代理。使用 `--no-restart`
+可以在更新和构建完成后让代理保持停止状态。
+
 `bun run dev` 作为 `bun run dev:proxy` 的别名保留。代理 API 暴露 `/healthz`、`/v1/responses`、
 `/api/*`;只有在 `bun run build:gui` 生成 `gui/dist` 之后,`GET /` 才会提供打包后的仪表盘。
 开发仪表盘时,请用 `bun run dev:gui` 单独运行前端。

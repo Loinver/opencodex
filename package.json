@@ -55,6 +55,7 @@
     "structure:check": "bun scripts/structure-ssot.ts",
     "generate:model-metadata": "bun scripts/generate-model-metadata.ts",
     "build:gui": "cd gui && bun install --frozen-lockfile && bun run build && cd .. && bun run prepare:package",
+    "update:source": "bun scripts/update-source.ts",
     "build:remote-workspace-helper": "cargo build --release --locked --manifest-path native/remote-workspace-helper/Cargo.toml",
     "test:remote-workspace-helper": "cargo test --locked --manifest-path native/remote-workspace-helper/Cargo.toml",
     "prepare:package": "bun scripts/prepare-package.ts",

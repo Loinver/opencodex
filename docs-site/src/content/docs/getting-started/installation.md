@@ -73,6 +73,17 @@ bun run dev:proxy   # starts the proxy API in dev mode (src/cli/index.ts start)
 bun run dev:gui     # starts the dashboard dev server (another terminal)
 ```
 
+To update a source checkout and bring the locally built proxy back up in one step:
+
+```bash
+bun run update:source [--proxy http://127.0.0.1:7897]
+```
+
+The command requires a clean working tree, stops the proxy first (files are never replaced
+under a live proxy), performs a fast-forward-only pull, reinstalls locked dependencies,
+rebuilds the packaged dashboard, and starts the proxy again. Use `--no-restart` to update
+and build while leaving the proxy stopped.
+
 `bun run dev` remains an alias for `bun run dev:proxy`. The proxy API exposes `/healthz`,
 `/v1/responses`, and `/api/*`; `GET /` serves the packaged dashboard only after `bun run build:gui`
 has produced `gui/dist`. While hacking on the dashboard, run the frontend separately with
