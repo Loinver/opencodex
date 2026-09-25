@@ -1475,7 +1475,7 @@ export function createServeOptions(ctx: ServeOptionsContext) {
           return withCors(anthropicErrorResponse(403, "cross-origin data-plane request blocked", "permission_error"), req, policy);
         }
         return runAdmittedHttpTurn(req, policy, async () => withCors(
-          await handleClaudeCountTokens(req, config, policy),
+          await handleClaudeCountTokens(req, config, policy, { claudeIntercept: ingress === "claude-intercept" }),
           req,
           policy,
         ));
@@ -1506,7 +1506,7 @@ export function createServeOptions(ctx: ServeOptionsContext) {
         // pre-translation stream + native passthrough callbacks) — do not re-wrap the
         // translated Anthropic stream here.
         return runAdmittedHttpTurn(req, policy, async turnAdmissionLease => withCors(
-          await handleClaudeMessages(req, config, logCtx, { requestId, start, turnAdmissionLease, admission }, policy),
+          await handleClaudeMessages(req, config, logCtx, { requestId, start, turnAdmissionLease, admission }, policy, { claudeIntercept: ingress === "claude-intercept" }),
           req,
           policy,
         ), { requestId, start, logCtx });

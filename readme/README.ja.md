@@ -8,23 +8,22 @@
 
 <p align="center">
   <a href="https://x.com/claudeebum"><img src="https://img.shields.io/badge/%40claudeebum-000000?logo=x&logoColor=white" alt="X で @claudeebum をフォロー"></a>
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/github/v/release/lidge-jun/opencodex?label=desktop&logo=github&color=24292f" alt="最新のデスクトップリリース"></a>
   <a href="https://www.npmjs.com/package/@bitkyc08/opencodex"><img src="https://img.shields.io/npm/v/@bitkyc08/opencodex?color=cb3837&label=npm&logo=npm" alt="npm version"></a>
   <a href="https://github.com/lidge-jun/opencodex/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@bitkyc08/opencodex?color=blue" alt="license"></a>
   <img src="https://img.shields.io/node/v/@bitkyc08/opencodex?logo=node.js&label=node" alt="node version">
 </p>
 
-<p align="center">
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="../assets/download-macos.svg" alt="macOS 向け OpenCodex をダウンロード" width="220"></a>
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="../assets/download-windows.svg" alt="Windows 向け OpenCodex をダウンロード" width="220"></a>
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="../assets/download-linux.svg" alt="Linux 向け OpenCodex をダウンロード" width="220"></a>
-</p>
-<p align="center"><sub>デスクトップアプリ（ベータ版）: macOS ユニバーサル <code>.dmg</code> · Windows x64 <code>.msi</code> · Linux x86_64 <code>.AppImage</code> / <code>.deb</code>。ターミナル派なら CLI をインストール:</sub></p>
-
 ```bash
 npm install -g @bitkyc08/opencodex
 ocx start
 ```
+
+<p align="center">
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/macOS-.dmg-24292f?logo=apple&logoColor=white" alt="macOS 版をダウンロード (.dmg)"></a>
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/Windows-.msi-24292f?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0zIDNoOC41djguNUgzem05LjUgMEgyMXY4LjVoLTguNXpNMyAxMi41aDguNVYyMUgzem05LjUgMEgyMVYyMWgtOC41eiIvPjwvc3ZnPg==" alt="Windows 版をダウンロード (.msi)"></a>
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/Linux-.AppImage-24292f?logo=linux&logoColor=white" alt="Linux 版をダウンロード (.AppImage)"></a>
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/Linux-.deb-24292f?logo=debian&logoColor=white" alt="Linux 版をダウンロード (.deb)"></a>
+</p>
 
 <table>
 <tr>
@@ -90,7 +89,21 @@ Desktop、Grok Build から使えます。Codex 認証用の **ChatGPT アカウ
 
 ## クイックスタート
 
-### デスクトップアプリ（ベータ版）
+### 個人向けインストール（CLI）
+
+```bash
+npm install -g @bitkyc08/opencodex   # Node 18 以上。Bun ランタイムは自動で同梱されます
+ocx start                         # プロキシとダッシュボードが localhost:10100 で起動
+```
+
+バックグラウンドで動かすなら `ocx service` を使ってください。
+
+**http://localhost:10100** を開き、Web ダッシュボードですべて設定します。プロバイダーの追加（40 以上の
+組み込み、または任意の OpenAI 互換エンドポイント）、モデルの選択、アカウントの管理はここで行います。
+`ocx gui` でいつでもダッシュボードを開き直せます。
+
+<details>
+<summary><b>デスクトップアプリ（ベータ版）</b></summary>
 
 デスクトップアプリは、同じプロキシとダッシュボードをネイティブウィンドウに収め、トレイと同梱の `ocx` を備えたものです。
 すでに起動しているプロキシに接続するか、同梱のプロキシを起動します。ダッシュボードはプロキシの
@@ -112,18 +125,7 @@ Desktop、Grok Build から使えます。Codex 認証用の **ChatGPT アカウ
 [macOS メニューバーアプリガイド](https://opencodex.me/ja/guides/macos-menu-bar/)で初回起動について説明しています。
 [`AGENTS_INSTALL.md`](../AGENTS_INSTALL.md#where-things-are-installed) にはディスクに書き込まれるすべてのものをまとめています。
 
-### 個人向けインストール（CLI）
-
-```bash
-npm install -g @bitkyc08/opencodex   # Node 18 以上。Bun ランタイムは自動で同梱されます
-ocx start                         # プロキシとダッシュボードが localhost:10100 で起動
-```
-
-バックグラウンドで動かすなら `ocx service` を使ってください。
-
-**http://localhost:10100** を開き、Web ダッシュボードですべて設定します。プロバイダーの追加（40 以上の
-組み込み、または任意の OpenAI 互換エンドポイント）、モデルの選択、アカウントの管理はここで行います。
-`ocx gui` でいつでもダッシュボードを開き直せます。
+</details>
 
 ### ChatGPT アカウントプール
 
@@ -307,14 +309,15 @@ CLI インストールには [Node](https://nodejs.org) 18 以上が必要です
 <details>
 <summary>メモリ所有権の詳細</summary>
 
-OpenCodex はプロセスが保持する状態を 36 種類に分けて追跡し、それぞれに文書化された上限があります:
+OpenCodex はプロセスが保持する状態を以下のカテゴリで追跡し、それぞれに文書化された上限があります:
 
-- **保持ストア 12 個**（リクエストログ、デバッグリング、画像キャッシュ、モデルキャッシュ、ビジョンの
+- **保持ストア 14 個**（リクエストログ、デバッグリング、画像キャッシュ、モデルキャッシュ、ビジョンの
   説明、カーソル blob、responses の継続など）はバイト単位で集計され、アプリが持つメモリ予算
-  （既定 256 MiB）によって退避されます。
+  （既定 256 MiB）によって退避されます。ただしネイティブ制御のリプレイ用ストアは固定され、
+  退避されません。
 - **観測バッファ 4 個**（トランスレーターのアキュムレーター、画像・OAuth・Grok の tail）は処理中の
   バイト圧力を監視するだけで、退避はしません。
-- **state-store の登録 24 個**が期限切れの掃除（60 秒間隔）と config 世代の reconciliation を担い、
+- **state-store の登録 28 個**が期限切れの掃除（60 秒間隔）と config 世代の reconciliation を担い、
   古いプロバイダー／アカウントのキーを取り除きます。
 - **パスとフィンガープリントのメモ**（ワークスペースのメタデータ、hardened identity、インストール
   salt、mode-hint の capability）は挿入順の LRU 上限（8〜128 件）を使います。

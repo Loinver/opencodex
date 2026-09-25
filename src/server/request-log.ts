@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { stampApiKeyAccountLabel, usesApiKeyAccount } from "../providers/label";
 import { KEY_ACCOUNT_LOG_LABEL_RE } from "../codex/account-label";
+import { attemptAccountChanged, sealRequestAttemptIdentity } from "./request-log-account-rotation";
+export { sealRequestAttemptIdentity };
 import { readBoundedResponseBody } from "../lib/bounded-body";
 import type { ResponsesTerminalStatus } from "../bridge";
 import {
@@ -1748,20 +1750,6 @@ export function beginRequestAttempt(
   };
 }
 
-export function sealRequestAttemptIdentity(
-  attempt: PersistedUsageAttempt | undefined,
-  provider: string,
-  adapter: string,
-  accountLogLabel?: string,
-): void {
-  if (!attempt) return;
-  if (attempt.provider !== provider || attempt.adapter !== adapter) delete attempt.credentialSource;
-  attempt.provider = provider;
-  attempt.adapter = adapter;
-  if (isCodexUsageAccountLogLabel(accountLogLabel)) attempt.accountLogLabel = accountLogLabel;
-  else delete attempt.accountLogLabel;
-}
-
 /** Preserve metered JSON failures before key recovery consumes/cancels their body. */
 export async function recordKeyAttemptFailure(logCtx: RequestLogContext, response: Response, signal?: AbortSignal): Promise<void> {
   const attempt = logCtx.activeAttempt;
@@ -1805,8 +1793,7 @@ export function noteProviderAttemptSend(
   stampApiKeyAccountLabel(logCtx, providerName, provider);
   const next = logCtx.accountLogLabel;
   if (attempt && usesApiKeyAccount(provider)) keyUsageOwners.add(attempt);
-  if (attempt && attempt.sendCount > 0 && previous !== next
-    && (KEY_ACCOUNT_LOG_LABEL_RE.test(previous ?? "") || KEY_ACCOUNT_LOG_LABEL_RE.test(next ?? ""))) {
+  if (attempt && attempt.sendCount > 0 && attemptAccountChanged(previous, next, attempt.provider, logCtx.provider)) {
     // An input estimate is not evidence that a failed send used that many tokens.
     delete attempt.inputTokenEstimate;
     finishRequestAttempt(attempt, attempt.status >= 100 ? attempt.status

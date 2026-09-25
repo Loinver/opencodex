@@ -8,23 +8,22 @@
 
 <p align="center">
   <a href="https://x.com/claudeebum"><img src="https://img.shields.io/badge/%40claudeebum-000000?logo=x&logoColor=white" alt="在 X 上關注 @claudeebum"></a>
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/github/v/release/lidge-jun/opencodex?label=desktop&logo=github&color=24292f" alt="最新桌面版發行"></a>
   <a href="https://www.npmjs.com/package/@bitkyc08/opencodex"><img src="https://img.shields.io/npm/v/@bitkyc08/opencodex?color=cb3837&label=npm&logo=npm" alt="npm 版本"></a>
   <a href="https://github.com/lidge-jun/opencodex/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@bitkyc08/opencodex?color=blue" alt="授權"></a>
   <img src="https://img.shields.io/node/v/@bitkyc08/opencodex?logo=node.js&label=node" alt="Node 版本">
 </p>
 
-<p align="center">
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="../assets/download-macos.svg" alt="下載 macOS 版 OpenCodex" width="220"></a>
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="../assets/download-windows.svg" alt="下載 Windows 版 OpenCodex" width="220"></a>
-  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="../assets/download-linux.svg" alt="下載 Linux 版 OpenCodex" width="220"></a>
-</p>
-<p align="center"><sub>桌面應用程式（Beta）：macOS 通用 <code>.dmg</code> · Windows x64 <code>.msi</code> · Linux x86_64 <code>.AppImage</code> / <code>.deb</code>。偏好終端機？安裝 CLI：</sub></p>
-
 ```bash
 npm install -g @bitkyc08/opencodex
 ocx start
 ```
+
+<p align="center">
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/macOS-.dmg-24292f?logo=apple&logoColor=white" alt="下載 macOS 版 (.dmg)"></a>
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/Windows-.msi-24292f?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0zIDNoOC41djguNUgzem05LjUgMEgyMXY4LjVoLTguNXpNMyAxMi41aDguNVYyMUgzem05LjUgMEgyMVYyMWgtOC41eiIvPjwvc3ZnPg==" alt="下載 Windows 版 (.msi)"></a>
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/Linux-.AppImage-24292f?logo=linux&logoColor=white" alt="下載 Linux 版 (.AppImage)"></a>
+  <a href="https://github.com/lidge-jun/opencodex/releases/latest"><img src="https://img.shields.io/badge/Linux-.deb-24292f?logo=debian&logoColor=white" alt="下載 Linux 版 (.deb)"></a>
+</p>
 
 <table>
 <tr>
@@ -88,7 +87,21 @@ Gemini、Grok、GLM、DeepSeek、Kimi、Qwen、Ollama 或任何其他 LLM。它�
 
 ## 快速開始
 
-### 桌面應用程式（Beta）
+### 個人安裝（CLI）
+
+```bash
+npm install -g @bitkyc08/opencodex   # Node 18+；Bun 執行環境會自動打包
+ocx start                         # 代理 + 儀表板位於 localhost:10100
+```
+
+用 `ocx service` 在背景執行。
+
+開啟 **http://localhost:10100**，在網頁儀表板完成所有設定——新增供應商
+（40+ 內建，或任何 OpenAI 相容端點）、挑選模型、管理帳號。隨時可用 `ocx gui`
+重新開啟儀表板。
+
+<details>
+<summary><b>桌面應用程式（Beta）</b></summary>
 
 桌面應用程式是同一套代理與儀表板的原生視窗版本，附系統匣與內建的 `ocx`。
 它會接上已在執行的代理，或啟動內建的那一個；儀表板仍使用代理的連接埠
@@ -110,18 +123,7 @@ WidgetKit 擴充套件，可顯示代理狀態、今日用量與供應商配額�
 [macOS 選單列應用程式指南](https://opencodex.me/zh-tw/guides/macos-menu-bar/) 涵蓋首次啟動，
 [`AGENTS_INSTALL.md`](../AGENTS_INSTALL.md#where-things-are-installed) 列出所有寫入磁碟的內容。
 
-### 個人安裝（CLI）
-
-```bash
-npm install -g @bitkyc08/opencodex   # Node 18+；Bun 執行環境會自動打包
-ocx start                         # 代理 + 儀表板位於 localhost:10100
-```
-
-用 `ocx service` 在背景執行。
-
-開啟 **http://localhost:10100**，在網頁儀表板完成所有設定——新增供應商
-（40+ 內建，或任何 OpenAI 相容端點）、挑選模型、管理帳號。隨時可用 `ocx gui`
-重新開啟儀表板。
+</details>
 
 ### ChatGPT 帳號池
 
@@ -293,14 +295,15 @@ Bun，Windows 也不需要 WSL。若 npm 攔截了打包執行環境的安裝腳
 <details>
 <summary>記憶體所有權細節</summary>
 
-OpenCodex 追蹤 36 類行程保留狀態。每一類都有文件化的上限：
+OpenCodex 在下列類別中追蹤行程保留狀態。每一類都有文件化的上限：
 
-- **12 個保留儲存**（請求日誌、除錯環形緩衝、圖片快取、模型快取、視覺
+- **14 個保留儲存**（請求日誌、除錯環形緩衝、圖片快取、模型快取、視覺
   描述、cursor blob、responses 延續等）以位元組計帳，並由
-  應用程式自己的記憶體預算淘汰（預設 256 MiB）。
+  應用程式自己的記憶體預算淘汰（預設 256 MiB）；其中 native control replay
+  儲存為固定，不會被淘汰。
 - **4 個觀測緩衝區**（翻譯累加器、image/OAuth/Grok 尾端）會
   監控進行中的位元組壓力，但不淘汰。
-- **24 個狀態儲存註冊**負責到期清掃（間隔 60 秒）與
+- **28 個狀態儲存註冊**負責到期清掃（間隔 60 秒）與
   設定世代調和，以移除過期的供應商／帳號鍵。
 - **路徑與指紋 memo**（工作區中繼資料、強化身分、安裝
   salt、mode-hint 能力）使用插入順序 LRU 上限（8–128 筆）。
