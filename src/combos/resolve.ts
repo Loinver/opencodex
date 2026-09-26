@@ -10,7 +10,7 @@ import {
 } from "./failover";
 import { quotaResetRemainingMs } from "./reset-window";
 import { getCombo, resolveComboId, targetKey } from "./types";
-import type { NormalizedComboConfig } from "./types";
+import type { NormalizedComboConfig, NormalizedComboTarget } from "./types";
 import {
   captureConfigGeneration,
   type GenerationContext,
@@ -18,7 +18,7 @@ import {
 
 export interface ComboPick {
   comboId: string;
-  target: Required<OcxComboTarget>;
+  target: NormalizedComboTarget;
   targetIndex: number;
   attempted: string[];
   writerGeneration: number;
@@ -138,9 +138,9 @@ export function quotaInactiveReason(
 }
 
 function smoothWeightedIndex(
-  targets: Required<OcxComboTarget>[],
+  targets: NormalizedComboTarget[],
   state: SelectionState,
-  eligible: (target: Required<OcxComboTarget>) => boolean,
+  eligible: (target: NormalizedComboTarget) => boolean,
 ): number {
   let best = -1;
   let bestScore = Number.NEGATIVE_INFINITY;
@@ -175,8 +175,8 @@ function smoothWeightedIndex(
  */
 function resetWindowIndex(
   config: OcxConfig,
-  targets: Required<OcxComboTarget>[],
-  eligible: (target: Required<OcxComboTarget>) => boolean,
+  targets: NormalizedComboTarget[],
+  eligible: (target: NormalizedComboTarget) => boolean,
   now = Date.now(),
 ): number {
   let selected = -1;
@@ -202,8 +202,10 @@ export function pickComboTarget(
   comboId: string,
   options: {
     exclude?: Iterable<string>;
-    eligible?: (target: Required<OcxComboTarget>) => boolean;
+    eligible?: (target: NormalizedComboTarget) => boolean;
     now?: number;
+    /** Inspect a round-robin choice without mutating its sticky/weight state. */
+    preview?: boolean;
   } = {},
 ): ComboPick | null {
   const writerGeneration = captureConfigGeneration();
@@ -211,7 +213,7 @@ export function pickComboTarget(
   if (!combo) throw new UnknownComboError(comboId);
   const excluded = new Set(options.exclude ?? []);
   const now = options.now ?? Date.now();
-  const eligible = (target: Required<OcxComboTarget>): boolean =>
+  const eligible = (target: NormalizedComboTarget): boolean =>
     targetProviderIsUsable(config, target, now)
     && !isComboTargetInCooldown(comboId, target, now)
     && !excluded.has(targetKey(target))
@@ -222,7 +224,13 @@ export function pickComboTarget(
     let state = selectionState.get(comboId);
     if (!state) {
       state = { successes: 0, currentWeights: new Map(), successfulUses: new Map() };
-      selectionState.set(comboId, state);
+      if (!options.preview) selectionState.set(comboId, state);
+    } else if (options.preview) {
+      state = {
+        ...state,
+        currentWeights: new Map(state.currentWeights),
+        successfulUses: new Map(state.successfulUses),
+      };
     }
     if (state.activeKey) {
       targetIndex = combo.targets.findIndex(target => targetKey(target) === state.activeKey && eligible(target));
@@ -291,7 +299,7 @@ export function pickComboTarget(
 export function noteComboSuccess(
   comboId: string,
   combo: NormalizedComboConfig,
-  target: Required<OcxComboTarget>,
+  target: NormalizedComboTarget,
   writerGeneration = captureConfigGeneration(),
 ): void {
   const key = targetKey(target);
@@ -336,8 +344,9 @@ export function advanceComboAfterFailure(
     resetAt?: unknown | unknown[];
     now?: number;
     cooldownMs?: number;
-    eligible?: (target: Required<OcxComboTarget>) => boolean;
+    eligible?: (target: NormalizedComboTarget) => boolean;
     cooldownScope?: ComboFailureCooldownScope;
+    onCooldownRecorded?: (target: Pick<OcxComboTarget, "provider" | "model">) => void;
     status?: number;
     code?: string | null;
     message?: string;
@@ -352,11 +361,12 @@ export function advanceComboAfterFailure(
       ? combo.targets.filter(target => target.provider === pick.target.provider)
       : [pick.target];
     for (const target of cooldownTargets) {
-      coolComboTarget(pick.comboId, target, {
+      const recorded = coolComboTarget(pick.comboId, target, {
         ...options,
         cooldownMs: options.cooldownMs ?? combo?.cooldownMs,
         writerGeneration: pick.writerGeneration,
       });
+      if (recorded) options.onCooldownRecorded?.(target);
     }
   }
   // #5691: under `cooldownWaitPolicy: "before-last-resort"` this final synchronous pick
@@ -380,7 +390,7 @@ export async function pickComboTargetWithWait(
   comboId: string,
   options: {
     exclude?: Iterable<string>;
-    eligible?: (target: Required<OcxComboTarget>) => boolean;
+    eligible?: (target: NormalizedComboTarget) => boolean;
     waitForCooldownMs: number;
     abortSignal?: AbortSignal;
     now?: number;
@@ -390,10 +400,10 @@ export async function pickComboTargetWithWait(
   const now = options.now ?? Date.now();
   const excluded = new Set(options.exclude ?? []);
   const customEligible = options.eligible;
-  const eligibleAt = (target: Required<OcxComboTarget>, at: number): boolean =>
+  const eligibleAt = (target: NormalizedComboTarget, at: number): boolean =>
     !isComboTargetInCooldown(comboId, target, at)
     && (customEligible?.(target) ?? true);
-  const eligible = (target: Required<OcxComboTarget>): boolean => eligibleAt(target, now);
+  const eligible = (target: NormalizedComboTarget): boolean => eligibleAt(target, now);
   // Milliseconds already slept inside this call. `waitForCooldownMs` is documented as a cap
   // per *selection attempt*, so a deferral wait and the ordinary wait below must share it —
   // otherwise a 3s deferral followed by a 9s ordinary wait spends 12s against a 10s budget.
@@ -411,7 +421,7 @@ export async function pickComboTargetWithWait(
   const defersLastResort = policyCombo?.cooldownWaitPolicy === "before-last-resort"
     && policyCombo.targets.some(target => !target.lastResort);
   if (defersLastResort && !options.abortSignal?.aborted) {
-    const normalOnly = (target: Required<OcxComboTarget>): boolean =>
+    const normalOnly = (target: NormalizedComboTarget): boolean =>
       !target.lastResort && eligible(target);
     const normalPick = pickComboTarget(config, comboId, {
       exclude: excluded,
@@ -540,11 +550,11 @@ export function clearComboSelectionState(comboId?: string): void {
   selectionState.delete(comboId);
 }
 
-export function tryPickComboModel(config: OcxConfig, modelId: string): ComboPick | null {
+export function tryPickComboModel(config: OcxConfig, modelId: string, preview = false): ComboPick | null {
   const comboId = resolveComboId(config, modelId);
   if (!comboId) return null;
   if (!getCombo(config, comboId)) throw new UnknownComboError(comboId);
-  const picked = pickComboTarget(config, comboId);
+  const picked = pickComboTarget(config, comboId, { preview });
   if (!picked) throw new NoAvailableComboTargetsError(comboId);
   return picked;
 }
