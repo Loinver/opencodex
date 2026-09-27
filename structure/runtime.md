@@ -24,7 +24,7 @@ Native result continuations and function-result injection follow [the mode-speci
 Native steering follows [the shared WebSocket contract](transports/streaming-health.md#experimental-native-mid-turn-steering); this surface's defaults remain unchanged.
 
 Responses admission and finalization are composed through the
-[core module ownership](transports/responses.md#core-module-ownership). This surface retains its existing behavior.
+[core module ownership](transports/responses.md#core-module-ownership). Kiro's optional account-load admission is process-local and request-owned; its slot ends with the response body or cancellation. Other providers retain their admission path.
 
 Catalog HTTP acquisition follows the [proxy-routing contract](catalog.md#remote-catalog-http-proxy-routing).
 
@@ -185,7 +185,7 @@ described in [OpenAI quota ownership](providers/openai-tiers.md#public-provider-
 
 `ocx start` refuses a duplicate PID, starts the proxy, writes `~/.opencodex/ocx.pid` and
 `runtime-port.json` through `src/config/process-state.ts`, syncs Codex config/catalog, then serves
-until shutdown. Normal shutdown restores native Codex. Service mode sets
+until shutdown. Normal shutdown restores native Codex; a sibling instance beside a live proxy ([Codex home](codex-home.md#codex-home)) syncs and restores nothing, and `ocx stop` of a runtime whose record carries `siblingOfPort` skips the shared teardown. Service mode sets
 `OCX_SERVICE=1`, so managed restarts do not repeatedly restore/reinject; explicit service stop and
 uninstall still restore. `src/service/cli.ts` removes the service token on uninstall only when persisted client state is disconnected and no pending connect marker owns the newly issued key. `src/client/connect.ts` publishes that fingerprint marker before the key, then clears it with the connection commit or rollback under the client lifecycle and config mutation locks. Connected, invalid, or mismatched client state retains an existing token. A valid pending marker retains only its matching fingerprint; an older marker does not own a replacement service key. An absent token is reported as absent; unsafe, malformed, or unreadable markers and lock, state-read, or deletion failures leave cleanup unverified.
 The package-tree integrity fence for live package replacement follows the
@@ -198,11 +198,11 @@ lost probe deletes this home's pid record and then binds a second listener that 
 records and re-points Codex at itself. `probePortOwner` in `src/server/proxy-liveness.ts` asks the
 busy port directly, on both loopback families, independent of the pid and runtime records; the
 outcome is the pure decision `decideBusyPreferredPort` in `src/cli/dispatch.ts`. An opencodex
-holder is refused with the same message the owner check prints (exit 0 instead under
-`OCX_SERVICE=1`, so the wrapper loop terminates), and a holder that does not identify as opencodex
+holder is refused with the same message the owner check prints (intentional stay-out under
+`OCX_SERVICE=1`, using the [Windows wrapper protocol](ops/docs-and-release.md#windows-service-wrapper-and-incomplete-updates)), and a holder that does not identify as opencodex
 is reported as such rather than called foreign, because an identity probe cannot distinguish a
 foreign server from an unreachable one. An explicit `--port` still never hops — it waits for the
-pin through `src/server/port-reclaim.ts` — and a configured `port: 0` still means "ask the OS".
+pin through `src/server/port-reclaim.ts` — and a configured `port: 0` still means "ask the OS". A restart replacement that finds its own draining parent waits for it instead ([restart handoff](ops/service-and-sidecars.md#restart-handoff)).
 
 Every `startServer` invocation acquires the `src/lib/spend-ledger-owner.ts` SQLite writer lease
 for its resolved OpenCodex state directory before loading configuration or binding a listener.
@@ -232,7 +232,7 @@ GUI, session bootstrap/exchange, and `/api/*`.
 The `hub-link` socket is HTTP-only and default-denies all but the fixed data routes, catalog, hub-state,
 usage, and `GET /readyz`; every `Upgrade` header, management, GUI, session, health, and unknown
 `/v1/*` route is rejected before dispatch. Its `opencodex-link.invalid` policy admits only configured
-key ids recorded by `links.json`, never the environment token. `ensureStarted()` is single-flight,
+key ids recorded by `links.json`, never the environment token. Context relays rebuild that policy for their post-body admission check, so key revocation stops an in-flight request before dispatch. `ensureStarted()` is single-flight,
 final deletion closes the listener, and `src/server/index/optional-listeners.ts` runs supervisor teardown before closing this listener and the Claude intercept pair.
 ### Claude intercept pair
 
@@ -248,7 +248,7 @@ still believes it talks to Anthropic. The proxy splices `CONNECT api.anthropic.c
 listener, relays every other CONNECT target blind, and refuses unauthenticated clients, plain proxied HTTP, and loopback targets. The per-install proxy token is stored owner-only under `<OPENCODEX_HOME>/claude-intercept/` (0600 plus a real per-user NTFS ACL on Windows, via `src/lib/windows-secret-acl.ts`, and re-pinned on every read-through `ensure`), and the settings file carrying it is written through the same hardened atomic writer. Every start runs `migrateClaudeInterceptSettings` (`src/claude/intercept/settings.ts`), which rewrites an owned env that no longer matches — e.g. a pre-auth URL left by an upgrade — while never creating an absent env or touching a foreign one, so a service restart cannot strand clients on 407s. Status/inspection reads the token without minting it; only apply and intercept startup create it.
 The TLS listener rewrites `POST /v1/messages` and `POST /v1/messages/count_tokens` to a loopback origin and dispatches them under the `claude-intercept` ingress; other paths relay to the configured upstream.
 The pair is on by default on a hub (`claudeCode.intercept.enabled`); its proxy port defaults to public port + 100 (`claudeCode.intercept.port`). Bind failure warns, and stop joins both sockets. With an ephemeral public port (`startServer(0)`), an explicit intercept port is required.
-This ingress honours first-party model bindings (`claudeCode.intercept.modelMap`); see [Claude Desktop](clients/claude-desktop.md#first-party-model-bindings). Picker mode adds a second Desktop CONNECT proxy on the next port; see [Claude Desktop](clients/claude-desktop.md#picker-mode-the-desktop-egress-proxy).
+This ingress honours first-party model bindings (`claudeCode.intercept.modelMap`); see [Claude Desktop](clients/claude-desktop.md#first-party-model-bindings). Picker mode and the primitive's optional `allowedTargets` restriction are described under [Desktop egress proxy](clients/claude-desktop.md#picker-mode-the-desktop-egress-proxy).
 
 `src/claude/intercept/client-class.ts` classifies each request by its Claude Code `User-Agent` entrypoint: `claude-desktop`, `claude-desktop-3p`, and `local-agent` are Desktop; other well-formed `claude-cli/<v> (external, <entrypoint>)` values are CLI; absent or malformed values are unknown.
 Only a client with its own first-party intent enabled (Desktop mode or `claudeCode.cliFirstParty`) enters the router for Messages paths; other paths use the configured upstream relay.
@@ -314,7 +314,7 @@ diagnostics only for a confirmed candidate and never reads adjacent auth state.
 Unix install-probe cleanup refusals retain their fail-closed behavior and report a bounded
 diagnostic suffix: a fixed probe phase, allowlisted native error/signal, and bounded exit status.
 Metadata contents, launcher paths and raw child errors never enter that suffix. Diagnostic
-classification does not grant process ownership or change rollback/termination policy.
+classification does not grant process ownership or change rollback/termination policy. An explicit `codex-shim install` (`src/cli/dispatch.ts`) exits nonzero when installation is refused or the resulting shim is unhealthy, printing the diagnostic summary; an already-installed healthy shim succeeds.
 
 Codex CLI update inspection is split from mutation. `system codex-cli-update check` makes no
 package-registry request and reads bounded provenance evidence for the configured launcher candidate, npm ownership layout,
@@ -342,7 +342,7 @@ field for every tool. Only bare or `default.`-prefixed `exec` and `apply_patch` 
 one recognized alternate body field or remove one complete outer Markdown fence; ambiguous
 alternate fields and every other freeform grammar pass through unchanged.
 
-The server exposes `POST /api/stop` which restores native Codex config, stops any installed service
+The server exposes `POST /api/stop` which restores native Codex config (a sibling instance answers `sharedTeardown: "not-owned"` instead), stops any installed service
 (to prevent respawn), and exits the process. The GUI sidebar stop button calls this endpoint.
 
 > Decision record: [ADR-0004](decisions/ADR-0004-lifecycle.md)
@@ -502,7 +502,7 @@ This is also why the classifier cannot duplicate visible output. Native byte str
 
 Regression coverage: `tests/responses/responses-forward-prompt-envelope.test.ts`, `tests/routing/router-combo-failover-classification.test.ts`, `tests/routing/routing-policy-fallback.test.ts`, `tests/helpers/combo-context-overflow-cases.ts`, and `tests/server/server-combo-failover-e2e.test.ts`.
 
-`src/combos/failover.ts` caps explicit upstream `Retry-After` target cooldowns at 24 hours while reset-derived, configured, and fallback cooldowns remain capped at 10 minutes.
+`src/combos/failover.ts` uses a 10-minute fallback for a spent account usage window (codes `usage_limit_exceeded`, `usage_limit_reached`, `1308`, or `usage limit reached` / `usage limit has been reached` prose, including HTTP 502) and for provider-scoped credential or billing failure codes such as `invalid_api_key` and `insufficient_quota`. This duration does not change failure classification or cooldown scope; upstream retry/reset signals and configured durations retain precedence. It caps explicit upstream `Retry-After` target cooldowns at 24 hours while reset-derived, configured, and fallback cooldowns remain capped at 10 minutes.
 
 ## Combo default effort precedence
 

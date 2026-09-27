@@ -44,6 +44,7 @@ import { clearThreadAccountMap } from "../../codex/routing";
 import { primeCodexPoolQuotas } from "../../codex/auth-api";
 import { DEFAULT_PROVIDER_CONTEXT_CAP, globalContextCapValue, providerContextCap, providerContextCaps, setAllProviderContextCaps, setGlobalContextCapValue, setProviderContextCap } from "../../providers/context-cap";
 import { resolveCodexHomeDir } from "../../codex/home";
+import { siblingOfLivePort } from "../../codex/sibling-start";
 import { MULTI_AGENT_MODE_HINT_RECOMMENDATION } from "../../codex/multi-agent-mode-policy";
 import { readUsageEntries } from "../../usage/log";
 import { getUsageDebugLogEntries } from "../../usage/debug";
@@ -210,6 +211,7 @@ export async function handleAgentSettingsRoutes(ctx: ManagementContext): Promise
 
   /** Best-effort Desktop 3P config auto-reconcile when providers change. */
   async function autoApplyDesktopBestEffort(): Promise<void> {
+    if (siblingOfLivePort() !== null) return;
     try {
       const { claudeDesktopIntegrationEnabled } = await import("../../codex/desired-state");
       const admitted = loadConfig();
@@ -226,9 +228,11 @@ export async function handleAgentSettingsRoutes(ctx: ManagementContext): Promise
       if (["not_installed", "no_owned_state", "foreign", "unsafe", "broken"].includes(beforeKind)) return;
       const { filterCatalogVisibleModels, desktopVisibleNativeSlugs } = await import("../../codex/catalog");
       const allModels = await (deps.fetchAllModels ?? fetchAllModels)(admitted);
+      if (siblingOfLivePort() !== null) return;
       // Serialized with Desktop mode transitions: a first-party switch cannot interleave with this write.
       const { runPickerTransition } = await import("./claude-desktop-picker-routes");
       await runPickerTransition(admitted, async () => {
+        if (siblingOfLivePort() !== null) return undefined;
         const current = loadConfig();
         // This is the real guard: the catalog await admits a concurrent explicit OFF.
         if (!claudeDesktopIntegrationEnabled(current)) return undefined;
@@ -753,9 +757,13 @@ export async function handleAgentSettingsRoutes(ctx: ManagementContext): Promise
       ...[...new Set(chosen)].filter(model => !selectableSet.has(model)),
     ];
     // #857: let CLI/GUI show when a running Codex app-server keeps an older
-    // in-memory catalog than the one on disk.
-    const { collectCodexAppServerCatalogState } = await import("../../codex/app-server-processes");
-    const catalogState = collectCodexAppServerCatalogState();
+    // in-memory catalog than the one on disk. Bounded request-path read: the synchronous
+    // collector blocked the event loop for the whole Windows CIM walk (4-7s measured).
+    const {
+      collectCodexAppServerCatalogStateWithin,
+      DASHBOARD_CATALOG_STATE_DEADLINE_MS,
+    } = await import("../../codex/app-server-processes");
+    const catalogState = await collectCodexAppServerCatalogStateWithin(DASHBOARD_CATALOG_STATE_DEADLINE_MS);
     return jsonResponse({
       chosen, available, catalogState,
       pickerAvailable: [...new Set(filterCatalogVisibleModels(models, config).map(catalogModelSlug).filter(slug => slug.includes("/")))],
