@@ -5,6 +5,7 @@ import type { TKey } from "./en";
  * German i18n catalog, generated from en.ts. Must match the `TKey` set (compile-checked).
  */
 export const de: Record<TKey, string> = {
+  "pws.anthropicAccountThresholdHint": "Überschreibt den Standard des Claude-Pools. 0 deaktiviert den nutzungsbasierten Wechsel nur für dieses Konto; Pause und Wiederherstellung bei Ratenlimits gelten weiterhin.",
   "kiroLogin.title": "Bei Kiro anmelden",
   "kiroLogin.chooseMethod": "Anmeldemethode wählen",
   "kiroLogin.cli": "Mit Kiro CLI anmelden",
@@ -2456,6 +2457,8 @@ export const de: Record<TKey, string> = {
   "pws.sponsor.orcaDescription": "Ein OpenAI-kompatibles Gateway mit adaptivem Routing und automatischem Failover.",
   "pws.sponsor.packyTitle": "Claude Code, Codex und Gemini an einem Ort",
   "pws.sponsor.packyDescription": "Ein API-Relay für Ihre KI-Programmierwerkzeuge. Starten Sie mit einem Token der Codex-Gruppe.",
+  "pws.sponsor.tokenlabTitle": "Ein API-Schlüssel für führende Modelle",
+  "pws.sponsor.tokenlabDescription": "Responses, Chat Completions, Streaming und Tool-Aufrufe für Coding-Agenten, mit wählbarem Bereitstellungsmodus und nutzungsbasierter Abrechnung.",
   "pws.sponsor.visit": "{provider} entdecken",
   "pws.sponsor.console": "Konsole öffnen",
   "modal.invalidPreset": "Diese integrierte Anbietervorlage ist unvollständig. Starten Sie den Proxy neu und versuchen Sie es erneut.",

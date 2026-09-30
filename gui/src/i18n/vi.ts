@@ -6,6 +6,7 @@ import type { TKey } from "./en";
  * Technical terms and model identifiers intentionally remain English.
  */
 export const vi: Record<TKey, string> = {
+  "pws.anthropicAccountThresholdHint": "Ghi đè ngưỡng mặc định của nhóm Claude. 0 chỉ tắt chuyển đổi dựa trên mức sử dụng của tài khoản này; tạm dừng và khôi phục khi bị giới hạn vẫn áp dụng.",
   "kiroLogin.title": "Đăng nhập Kiro",
   "kiroLogin.chooseMethod": "Chọn cách đăng nhập",
   "kiroLogin.cli": "Nhập từ Kiro CLI",
@@ -1463,6 +1464,8 @@ export const vi: Record<TKey, string> = {
   "pws.sponsor.orcaDescription": "Gateway tương thích OpenAI với tính năng định tuyến thích ứng và tự động chuyển đổi dự phòng.",
   "pws.sponsor.packyTitle": "Claude Code, Codex và Gemini tại một nơi",
   "pws.sponsor.packyDescription": "Relay API cho các công cụ AI lập trình của bạn. Bắt đầu với token nhóm Codex.",
+  "pws.sponsor.tokenlabTitle": "Một API key cho các model hàng đầu",
+  "pws.sponsor.tokenlabDescription": "Hỗ trợ Responses, Chat Completions, streaming và gọi công cụ cho coding agent, với chế độ phân phối tùy chọn và trả theo mức sử dụng.",
   "pws.sponsor.visit": "Khám phá {provider}",
   "pws.sponsor.console": "Mở console",
   "modal.invalidPreset": "Preset của provider tích hợp này bị thiếu. Hãy khởi động lại proxy và thử lại.",

@@ -4,6 +4,7 @@ import type { TKey } from "./en";
  * Korean i18n catalog; must match the `TKey` set (compile-checked).
  */
 export const ko: Record<TKey, string> = {
+  "pws.anthropicAccountThresholdHint": "Claude 풀 기본값을 재정의합니다. 0은 이 계정의 사용량 기반 전환만 끄며, 일시정지와 요청 제한 복구는 계속 적용됩니다.",
   "kiroLogin.title": "Kiro에 로그인",
   "kiroLogin.chooseMethod": "로그인 방법 선택",
   "kiroLogin.cli": "Kiro CLI에서 가져오기",
@@ -2495,6 +2496,8 @@ export const ko: Record<TKey, string> = {
   "pws.sponsor.orcaDescription": "자동 라우팅과 대체 모델 연결을 지원하는 OpenAI 호환 게이트웨이입니다.",
   "pws.sponsor.packyTitle": "Claude Code, Codex, Gemini를 한곳에서",
   "pws.sponsor.packyDescription": "여러 AI 코딩 도구에 연결하는 API 릴레이입니다. Codex 그룹 토큰으로 시작하세요.",
+  "pws.sponsor.tokenlabTitle": "주요 모델을 API 키 하나로",
+  "pws.sponsor.tokenlabDescription": "코딩 에이전트를 위한 Responses, Chat Completions, 스트리밍, 도구 호출을 지원하며 전달 방식을 골라 쓴 만큼 결제합니다.",
   "pws.sponsor.visit": "{provider} 살펴보기",
   "pws.sponsor.console": "콘솔 열기",
   "modal.invalidPreset": "내장 프로바이더 설정이 완전하지 않습니다. 프록시를 다시 시작한 뒤 재시도하세요.",

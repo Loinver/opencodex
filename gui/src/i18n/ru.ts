@@ -4,6 +4,7 @@ import type { TKey } from "./en";
  * Russian i18n catalog; must match the `TKey` set (compile-checked).
  */
 export const ru: Record<TKey, string> = {
+  "pws.anthropicAccountThresholdHint": "Переопределяет порог пула Claude для этого аккаунта. 0 отключает переключение по использованию только для этого аккаунта; пауза и восстановление после 429 продолжают работать.",
   "kiroLogin.title": "Войти в Kiro",
   "kiroLogin.chooseMethod": "Выберите способ входа",
   "kiroLogin.cli": "Импортировать через Kiro CLI",
@@ -1458,6 +1459,8 @@ export const ru: Record<TKey, string> = {
   "pws.sponsor.orcaDescription": "Совместимый с OpenAI шлюз с адаптивной маршрутизацией и автоматическим переключением.",
   "pws.sponsor.packyTitle": "Claude Code, Codex и Gemini в одном месте",
   "pws.sponsor.packyDescription": "API-ретранслятор для инструментов ИИ-разработки. Начните с токена группы Codex.",
+  "pws.sponsor.tokenlabTitle": "Один API-ключ для ведущих моделей",
+  "pws.sponsor.tokenlabDescription": "Responses, Chat Completions, потоковая передача и вызов инструментов для ИИ-агентов разработки с выбором режима доставки и оплатой по факту использования.",
   "pws.sponsor.visit": "Подробнее о {provider}",
   "pws.sponsor.console": "Открыть консоль",
   "modal.invalidPreset": "Этот встроенный пресет провайдера неполный. Перезапустите прокси и попробуйте ещё раз.",

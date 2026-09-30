@@ -4,6 +4,7 @@ import type { TKey } from "./en";
  * Japanese i18n catalog; must match the `TKey` set (compile-checked).
  */
 export const ja: Record<TKey, string> = {
+  "pws.anthropicAccountThresholdHint": "Claude プールの既定値を上書きします。0 はこのアカウントだけで使用量による切り替えを無効にします。一時停止とレート制限からの復旧は引き続き適用されます。",
   "kiroLogin.title": "Kiro にログイン",
   "kiroLogin.chooseMethod": "ログイン方法を選択",
   "kiroLogin.cli": "Kiro CLI から取り込む",
@@ -1382,6 +1383,8 @@ export const ja: Record<TKey, string> = {
   "pws.sponsor.orcaDescription": "自動ルーティングとフェイルオーバーに対応したOpenAI互換ゲートウェイです。",
   "pws.sponsor.packyTitle": "Claude Code、Codex、Geminiを一か所で",
   "pws.sponsor.packyDescription": "AIコーディングツール向けAPIリレーです。Codexグループのトークンで始められます。",
+  "pws.sponsor.tokenlabTitle": "主要モデルを1つのAPIキーで",
+  "pws.sponsor.tokenlabDescription": "コーディングエージェント向けにResponses、Chat Completions、ストリーミング、ツール呼び出しに対応し、配信モードを選んで従量課金で使えます。",
   "pws.sponsor.visit": "{provider}を見る",
   "pws.sponsor.console": "コンソールを開く",
   "modal.invalidPreset": "この組み込みプロバイダープリセットは不完全です。プロキシを再起動してもう一度お試しください。",

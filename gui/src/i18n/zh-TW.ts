@@ -2,6 +2,7 @@ import type { TKey } from "./en";
 
 /** Traditional Chinese (Taiwan) UI strings — keys must match `en.ts` 1:1. */
 export const zhTW: Record<TKey, string> = {
+  "pws.anthropicAccountThresholdHint": "覆寫 Claude 集區預設門檻。0 僅停用此帳戶的依用量切換；暫停和速率限制復原仍然適用。",
   "kiroLogin.title": "登入 Kiro",
   "kiroLogin.chooseMethod": "選擇登入方式",
   "kiroLogin.cli": "從 Kiro CLI 匯入",
@@ -1171,6 +1172,8 @@ export const zhTW: Record<TKey, string> = {
   "pws.sponsor.orcaDescription": "相容 OpenAI 的閘道，支援自適應路由和自動容錯移轉。",
   "pws.sponsor.packyTitle": "一站連接 Claude Code、Codex 和 Gemini",
   "pws.sponsor.packyDescription": "適用於 AI 程式開發工具的 API 中轉服務。使用 Codex 群組權杖開始。",
+  "pws.sponsor.tokenlabTitle": "一個 API 金鑰，連接主流模型",
+  "pws.sponsor.tokenlabDescription": "為程式開發代理提供 Responses、Chat Completions、串流輸出和工具呼叫，可選擇交付模式並按用量付費。",
   "pws.sponsor.visit": "了解 {provider}",
   "pws.sponsor.console": "開啟控制台",
   "modal.invalidPreset": "此內建供應商預設不完整。請重新啟動代理後重試。",

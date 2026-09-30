@@ -6,6 +6,7 @@
  * `{var}` are plain interpolations.
  */
 export const en = {
+  "pws.anthropicAccountThresholdHint": "Overrides the Claude pool default. 0 disables usage-based switching only for this account; pause and rate-limit recovery still apply.",
   "kiroLogin.title": "Sign in to Kiro",
   "kiroLogin.chooseMethod": "Choose a sign-in method",
   "kiroLogin.cli": "Kiro CLI",
@@ -1491,6 +1492,8 @@ export const en = {
   "pws.sponsor.orcaDescription": "An OpenAI-compatible gateway with adaptive routing and automatic failover.",
   "pws.sponsor.packyTitle": "Claude Code, Codex and Gemini in one place",
   "pws.sponsor.packyDescription": "An API relay for your AI coding tools. Start with a Codex-group token.",
+  "pws.sponsor.tokenlabTitle": "One API key for leading models",
+  "pws.sponsor.tokenlabDescription": "Responses, Chat Completions, streaming and tool calling for coding agents, with your choice of delivery mode and pay-as-you-go billing.",
   "pws.sponsor.visit": "Explore {provider}",
   "pws.sponsor.console": "Open console",
   "modal.invalidPreset": "This built-in provider preset is incomplete. Restart the proxy and try again.",
